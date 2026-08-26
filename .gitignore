@@ -1,0 +1,8 @@
+build/
+venv/
+.vscode/
+.DS_Store
+dataset/
+
+# Personal notes
+PLAN.md
