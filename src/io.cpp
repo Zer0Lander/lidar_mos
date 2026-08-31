@@ -22,3 +22,17 @@ bool loadScan(const std::string& path, CloudI::Ptr& cloud) {
     }
     return true;
 }
+
+std::vector<uint32_t> loadLabels(const std::string& path) {
+    std::vector<uint32_t> labels;
+    std::ifstream file(path, std::ios::binary);
+    if (!file) {
+        std::cerr << "could not open label: " << path << "\n";
+        return labels;
+    }
+    uint32_t raw;
+    while (file.read(reinterpret_cast<char*>(&raw), sizeof(uint32_t))) {
+        labels.push_back(raw & 0xFFFF);
+    }
+    return labels;
+}

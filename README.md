@@ -28,7 +28,7 @@ Clustered objects, each in its own color:
 
 ## Build
 
-Needs a C++17 compiler, CMake, and PCL (1.8 or newer).
+Needs a C++20 compiler, CMake, and PCL (1.8 or newer).
 
 ```bash
 mkdir build && cd build
