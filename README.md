@@ -62,19 +62,40 @@ The dataset is not included (large and separately licensed). Download it and poi
 `mos` at any `.bin`. Only the scans are needed for detection; the labels are for
 the later segmentation stage.
 
+## Evaluation
+
+The `eval` tool scores ground removal against the SemanticKITTI labels, so it
+needs the `.label` files, not just the scans. Point it at a sequence directory
+(the folder containing `velodyne/` and `labels/`) and a frame range:
+
+```bash
+./eval <sequence_dir> [start] [end] [step]
+
+./eval /path/to/sequences/00 0 4540 50   # whole drive, every 50th frame
+```
+
+For each frame it prints recall (fraction of ground removed), precision (of the
+removed points, how much was actually ground), and residual (ground left in the
+output), then a summary with the means and the worst frame.
+
 ## Status
 
-Working: load, crop, voxel downsample, ground removal (horizontal-constrained
-RANSAC), Euclidean clustering, axis-aligned bounding boxes.
+Working: load, crop, voxel downsample, ground removal (region-wise plane fitting
+over concentric range/azimuth zones), Euclidean clustering, axis-aligned bounding
+boxes.
+
+Ground removal is evaluated against SemanticKITTI labels with the `eval` tool.
+On sequence 00 the region-wise method leaves 1.3% mean residual ground (worst
+3.1% over the drive), versus 2.1% mean and 15.4% worst for a single RANSAC plane.
 
 ## Limitations
 
 This is a first version, correct in structure but not tuned for accuracy.
 
-- **Ground removal** works on most frames (~2% leftover) but fails on cluttered
-  scenes. The single RANSAC plane is height-blind, so it can lock onto a slab of
-  object points about a meter above the road and leave the ground behind. A
-  height-anchored or sector-based fit would fix it.
+- **Ground removal** leaves ~1.3% residual ground on sequence 00. It over-removes
+  a little: low vegetation at ground level and the bottom slivers of walls and
+  cars get swept up with the road, harmless for clustering, but it means whole
+  objects are not touched, only their base.
 - **Clustering** groups every dense blob, including walls, vegetation, and small
   fragments, not just real objects. There is no size or shape filtering yet, so
   many boxed "detections" are not actually objects.
@@ -87,7 +108,6 @@ These are known and are the focus of the next iterations.
 
 ## Next steps
 
-- Height-anchor the ground fit to fix the cluttered-frame failures.
 - Filter clusters by size and shape so only real objects are detected.
 - Oriented (PCA) bounding boxes for a tighter fit on angled objects.
 - Moving vs static classification across frames, the moving-object-segmentation goal.
